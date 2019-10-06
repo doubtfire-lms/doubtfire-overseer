@@ -1,0 +1,19 @@
+version: "3"
+services:
+  app:
+    container_name: overseer
+    build:
+      context: .
+      dockerfile: ./Dockerfile.development
+    restart: always
+    environment:
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - ROUTE_KEY=${ROUTE_KEY}
+      - LANGUAGE_ENVIRONMENTS=${LANGUAGE_ENVIRONMENTS}
+      - DEFAULT_LANGUAGE_ENVIRONMENT=${DEFAULT_LANGUAGE_ENVIRONMENT}
+
+    command: ./app.rb
+    volumes:
+      - ./:/usr/src/app
