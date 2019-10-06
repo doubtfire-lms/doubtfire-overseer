@@ -3,34 +3,6 @@ require "json"
 require "zip"
 require "pathname"
 
-class ClientException < RuntimeError
-  attr_reader :status
-
-  def initialize(status = 400, message)
-    puts "Client error: #{message.to_s}, #{status}"
-    @status = status
-    super(message)
-  end
-end
-
-class ServerException < RuntimeError
-  attr_reader :status
-
-  def initialize(status = 500, message)
-    puts "Server error: #{message.to_s}, #{status}"
-    @status = status
-    super(message)
-  end
-end
-
-def client_error!(message, status, _headers = {}, _backtrace = [])
-  raise ClientException.new status, message
-end
-
-def server_error!(message, status, _headers = {}, _backtrace = [])
-  raise ServerException.new status, message
-end
-
 class Receiver
 
   ##################################################################

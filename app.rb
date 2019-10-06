@@ -1,6 +1,6 @@
 #!/usr/local/bin/ruby
 
-require "./recieve_rabbit_mq.rb"
+require "./receive_rabbit_mq.rb"
 
 begin
   puts ENV['ROUTE_KEY'].nil?
