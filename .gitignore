@@ -1,3 +1,7 @@
 student_projects
 .DS_Store
 .env
+dev_files
+test.rb
+.byebug_history
+.vscode

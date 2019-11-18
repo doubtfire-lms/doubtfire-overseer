@@ -1,15 +1,15 @@
+# frozen_string_literal: true
+
 source 'http://rubygems.org'
 
 ruby '2.5.3'
 
-# gem 'sinatra'
-gem 'grape'
-gem 'thin'
+gem 'bunny', '>= 2.14.1'
+gem 'bunny-pub-sub', git: 'git://github.com/doubtfire-overseer/bunny-pub-sub.git'
+gem 'dotenv'
 gem 'rubyzip'
-gem 'bunny', ">= 2.14.1"
-# gem 'pathname'
 
 group :development do
-  gem 'rufo'
   gem 'rerun'
+  gem 'rufo'
 end

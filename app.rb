@@ -1,15 +1,35 @@
-#!/usr/local/bin/ruby
+# frozen_string_literal: true
 
-require "./receive_rabbit_mq.rb"
+require 'dotenv/load'
+require 'bunny-pub-sub/subscriber'
+require 'bunny-pub-sub/publisher'
+require_relative 'overseer_receive_action.rb'
 
-begin
-  puts ENV['ROUTE_KEY'].nil?
-  return puts "Must define environment variable ROUTE_KEY" if ENV['ROUTE_KEY'].nil?
-  return puts "Must define environment variable LANGUAGE_ENVIRONMENTS" if ENV['LANGUAGE_ENVIRONMENTS'].nil?
-  return puts "Must define environment variable DEFAULT_LANGUAGE_ENVIRONMENT" if ENV['DEFAULT_LANGUAGE_ENVIRONMENT'].nil?
+subscriber_config = {
+  RABBITMQ_HOSTNAME: ENV['RABBITMQ_HOSTNAME'],
+  RABBITMQ_USERNAME: ENV['RABBITMQ_USERNAME'],
+  RABBITMQ_PASSWORD: ENV['RABBITMQ_PASSWORD'],
+  EXCHANGE_NAME: ENV['EXCHANGE_NAME'],
+  DURABLE_QUEUE_NAME: ENV['DURABLE_QUEUE_NAME'],
+  BINDING_KEYS: ENV['BINDING_KEYS'],
+  DEFAULT_BINDING_KEY: ENV['DEFAULT_BINDING_KEY']
+}
 
-  receiver = Receiver.new
-  receiver.start
-rescue RuntimeError => msg
-  puts msg
-end
+assessment_results_publisher_config = {
+  RABBITMQ_HOSTNAME: ENV['RABBITMQ_HOSTNAME'],
+  RABBITMQ_USERNAME: ENV['RABBITMQ_USERNAME'],
+  RABBITMQ_PASSWORD: ENV['RABBITMQ_PASSWORD'],
+  EXCHANGE_NAME: ENV['EXCHANGE_NAME'],
+  DURABLE_QUEUE_NAME: 'assessment_results',
+  BINDING_KEYS: ENV['BINDING_KEYS'],
+  DEFAULT_BINDING_KEY: ENV['DEFAULT_BINDING_KEY'],
+  # Publisher specific key
+  # Note: `*.result` works too, but it makes no sense using that.
+  ROUTING_KEY: 'assessment.result'
+}
+
+assessment_results_publisher = Publisher.new assessment_results_publisher_config
+
+register_subscriber(subscriber_config,
+                    method(:receive),
+                    assessment_results_publisher)
