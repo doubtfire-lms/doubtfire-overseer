@@ -9,5 +9,3 @@ WORKDIR /usr/src/app
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
-
-CMD ["./app.rb"]
