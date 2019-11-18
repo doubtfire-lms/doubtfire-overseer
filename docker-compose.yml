@@ -4,12 +4,8 @@ services:
     container_name: overseer
     build: .
     restart: always
-    environment:
-      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-      - ROUTE_KEY=${ROUTE_KEY}
-      - LANGUAGE_ENVIRONMENTS=${LANGUAGE_ENVIRONMENTS}
-      - DEFAULT_LANGUAGE_ENVIRONMENT=${DEFAULT_LANGUAGE_ENVIRONMENT}
-
     command: ./app.rb
+
+# TODO: Maybe add inheritence.. https://docs.docker.com/compose/reference/overview/#specifying-multiple-compose-files
+# Solution: Use different dockerfiles, probably one that uses multi-stage build https://docs.docker.com/develop/develop-images/multistage-build/
+

@@ -11,4 +11,3 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
 COPY . .
-CMD ["./app.rb"]
