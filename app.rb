@@ -21,8 +21,6 @@ assessment_results_publisher_config = {
   RABBITMQ_PASSWORD: ENV['RABBITMQ_PASSWORD'],
   EXCHANGE_NAME: ENV['EXCHANGE_NAME'],
   DURABLE_QUEUE_NAME: 'assessment_results',
-  BINDING_KEYS: ENV['BINDING_KEYS'],
-  DEFAULT_BINDING_KEY: ENV['DEFAULT_BINDING_KEY'],
   # Publisher specific key
   # Note: `*.result` works too, but it makes no sense using that.
   ROUTING_KEY: 'assessment.result'
