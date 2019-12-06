@@ -1,8 +1,8 @@
 GIT
-  remote: git://github.com/doubtfire-overseer/bunny-pub-sub.git
-  revision: 6369773d39ff519e3045f71a1128d32b3403ea00
+  remote: https://github.com/doubtfire-overseer/bunny-pub-sub
+  revision: 5e4f1acc99f0b1fd9a5fe3cbce6c8c55d94f7f1b
   specs:
-    bunny-pub-sub (0.0.1)
+    bunny-pub-sub (0.0.9)
       bunny (~> 2.14)
 
 GEM
@@ -29,7 +29,7 @@ PLATFORMS
 
 DEPENDENCIES
   bunny (>= 2.14.1)
-  bunny-pub-sub!
+  bunny-pub-sub (= 0.0.9)!
   dotenv
   rerun
   rubyzip
