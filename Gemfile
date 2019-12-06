@@ -5,7 +5,7 @@ source 'http://rubygems.org'
 ruby '2.5.3'
 
 gem 'bunny', '>= 2.14.1'
-gem 'bunny-pub-sub', git: 'git://github.com/doubtfire-overseer/bunny-pub-sub.git'
+gem 'bunny-pub-sub', '0.0.9', git: 'https://github.com/doubtfire-overseer/bunny-pub-sub'
 gem 'dotenv'
 gem 'rubyzip'
 
