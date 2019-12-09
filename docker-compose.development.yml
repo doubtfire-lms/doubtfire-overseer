@@ -2,10 +2,12 @@ version: "3"
 services:
   app:
     container_name: overseer
+    # image: overseer
     build:
       context: .
-      dockerfile: ./Dockerfile.development
-    restart: always
-    command: ./app.rb
+      dockerfile: ./development.Dockerfile
+    command: bundle exec ruby ./app.rb
     volumes:
-      - ./:/usr/src/app
+      - ./:/home/overseer/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Another volume for ontrack FS
