@@ -6,8 +6,16 @@ services:
     build:
       context: .
       dockerfile: ./development.Dockerfile
-    command: bundle exec ruby ./app.rb
+    command: bundle exec rerun --background ./app.rb
     volumes:
-      - ./:/home/overseer/app
-      - /var/run/docker.sock:/var/run/docker.sock
-      # Another volume for ontrack FS
+      # App's code path - not required in final image
+      - ./:/app
+      # Docker socket path - required.
+      - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
+      # Host path for writing the output of execution - required.
+      # TODO: Test by mounting an actual XFS volume.
+      - ${HOST_XFS_VOLUME}:/work-dir
+      # Path for reading OnTrack files from - required.
+      # TODO: Map this directly to itself as the path will be a part of the messages
+      # received from OnTrack via RabbitMQ.
+      - ${ONTRACK_VOLUME}:${DOCKER_ONTRACK_VOLUME}

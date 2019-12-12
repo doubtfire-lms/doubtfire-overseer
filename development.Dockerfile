@@ -1,16 +1,39 @@
-FROM ruby:2.5.3
+FROM ubuntu:18.04
 
-RUN groupadd --gid 1101 watch && \
-    useradd --uid 1001 --gid 1101 --create-home --shell /bin/bash overseer
-USER 1001:1101
-WORKDIR /home/overseer/app
+ENV PATH /home/overseer/.rbenv/bin:/home/overseer/.rbenv/shims:$PATH
 
-RUN gem install bundler -v 2.0.2
+# Ruby and docker-ce-cli apt dependencies
+# as well as creating user 'overseer' with uid 1001
+# and group 'docker' with gid 999. These accounts should
+# exist on the host machine too with the same uid and gid,
+# with the correct privileges.
+RUN apt-get update \
+    && apt-get install -qqy \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    git \
+    gnupg-agent \
+    software-properties-common \
+    autoconf bison build-essential libssl1.0-dev libyaml-dev \
+    libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm5 libgdbm-dev \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+    && add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+    && apt-get update \
+    && apt-get install docker-ce-cli \
+    && groupadd --gid 999 docker && \
+    useradd --uid 1001 --gid 999 --create-home --shell /bin/bash overseer && \
+    newgrp docker
 
-# throw errors if Gemfile has been modified since Gemfile.lock
-RUN bundle config --global frozen 1
+USER 1001:999
+WORKDIR /home/overseer
 
-WORKDIR /home/overseer/app
+RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash \
+    && rbenv install 2.5.3 && rbenv global 2.5.3 \
+    && gem install bundler -v 2.0.2
+
+WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle install

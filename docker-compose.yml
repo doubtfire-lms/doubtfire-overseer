@@ -2,14 +2,13 @@ version: "3"
 services:
   app:
     container_name: overseer
-    # image: overseer
-    build: .
-    restart: always
     command: bundle exec ruby ./app.rb
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      # Another volume for ontrack FS
-
-# TODO: Maybe add inheritence.. https://docs.docker.com/compose/reference/overview/#specifying-multiple-compose-files
-# Solution: Use different dockerfiles, probably one that uses multi-stage build https://docs.docker.com/develop/develop-images/multistage-build/
-
+      # Docker socket path - required.
+      - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
+      # Host path for writing the output of execution - required.
+      - ${HOST_XFS_VOLUME}:/work-dir
+      # Path for reading OnTrack files from - required.
+      # Is maped directly to itself as the path will be a part of the messages
+      # received from OnTrack via RabbitMQ.
+      - ${ONTRACK_VOLUME}:${ONTRACK_VOLUME}
