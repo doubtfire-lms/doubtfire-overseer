@@ -26,6 +26,12 @@ RUN apt-get update \
     useradd --uid 1001 --gid 999 --create-home --shell /bin/bash overseer && \
     newgrp docker
 
+# TODO: Verify if this is required.
+RUN touch /var/run/docker.sock && \
+    chown 1001:999 /var/run/docker.sock \
+    && mkdir /work-dir \
+    && chown 1001:999 /work-dir
+
 USER 1001:999
 WORKDIR /home/overseer
 
@@ -37,5 +43,11 @@ WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
+
+# Is not needed as long as the equivalent HOST DIR
+# has been initiated with the correct FACLs.
+# RUN mkdir /home/overseer/work-dir
+    # && chown -R 1001:999 /home/overseer/work-dir \
+    # && chmod -R 777 /home/overseer/work-dir
 
 COPY . .
