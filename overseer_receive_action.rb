@@ -149,6 +149,7 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
     message:
     `timeout 20 docker run \
     -m 100MB \
+    --memory-swap 100MB \
     --restart no \
     --cpus 1 \
     --network none \
@@ -218,6 +219,7 @@ def extract_result_files(s_path, output_path, random_string, exitstatus)
       }
     else
       FileUtils.copy(input_txt_file_name, output_txt_file_name)
+      `chmod o+w #{output_txt_file_name}`
     end
 
     # FileUtils.rm input_txt_file_name
@@ -242,6 +244,7 @@ def extract_result_files(s_path, output_path, random_string, exitstatus)
       }
     else
       FileUtils.copy(input_yaml_file_name, output_yaml_file_name)
+      `chmod o+w #{output_yaml_file_name}`
     end
 
     # FileUtils.rm input_yaml_file_name
