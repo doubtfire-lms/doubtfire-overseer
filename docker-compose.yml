@@ -2,13 +2,16 @@ version: "3"
 services:
   app:
     container_name: overseer
+    image: akashagarwal7/overseer:production-1.0
     command: bundle exec ruby ./app.rb
     volumes:
       # Docker socket path - required.
       - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
       # Host path for writing the output of execution - required.
-      - ${HOST_XFS_VOLUME}:/work-dir
+      - ${HOST_XFS_VOLUME}:/home/overseer/work-dir
       # Path for reading OnTrack files from - required.
       # Is maped directly to itself as the path will be a part of the messages
       # received from OnTrack via RabbitMQ.
+      # OnTrack will have to provide correct FACL
+      # for overseer to write to it directly.
       - ${ONTRACK_VOLUME}:${ONTRACK_VOLUME}
