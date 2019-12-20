@@ -118,7 +118,7 @@ end
 # command:          The bash command to be run via
 #                   `docker run [options] <image_name_tag> /bin/bash -c "#{command}"`.
 # image_name_tag:   Name and tag of the image to be run as a container.
-def run_assessment_script_via_docker(output_path, random_string, exec_mode, command, image_name_tag)
+def run_assessment_script_via_docker(output_path, random_string, exec_mode, command, image_name_tag, task_id, timestamp)
   client_error!({ error: "A valid Docker image_name:tag is needed" }, 400) if image_name_tag.nil? || image_name_tag.to_s.strip.empty?
   force_remove_container
 
@@ -145,28 +145,20 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   # https://docs.docker.com/engine/reference/run/#runtime-constraints-on-resources
   # -u="overseer" (specify default non-root user)
 
-  result = {
-    message:
-    `timeout 20 docker run \
-    -m 100MB \
-    --memory-swap 100MB \
-    --restart no \
-    --cpus 1 \
-    --network none \
-    --volume #{host_exec_path}:/#{CONSTANTS::DOCKER_EXECDIR} \
-    --volume #{host_output_path}:/#{CONSTANTS::DOCKER_OUTDIR} \
-    --name #{container_name} \
-    #{image_name_tag} \
-    /bin/bash -c "#{command}"`
-  }
+  `timeout 20 docker run \
+  -m 100MB \
+  --memory-swap 100MB \
+  --restart no \
+  --cpus 1 \
+  --network none \
+  --volume #{host_exec_path}:/#{CONSTANTS::DOCKER_EXECDIR} \
+  --volume #{host_output_path}:/#{CONSTANTS::DOCKER_OUTDIR} \
+  --name #{container_name} \
+  #{image_name_tag} \
+  /bin/bash -c "#{command}"`
 
   puts 'π' * 120
   puts "ππππππππππππππππ Container '#{container_name}' execution for exec_mode: '#{exec_mode}' ENDED ππππππππππππππππππππππ"
-
-  puts 'Run output:'
-  puts '∏' * 120
-  puts result[:message]
-  puts '∏' * 120
 
   exitstatus = $?.exitstatus
   extract_result_files docker_outdir_path, output_path, random_string, $?.exitstatus
@@ -177,6 +169,8 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   puts "Docker run command execution status code: #{exitstatus}"
 
   if exitstatus != 0
+    result[:task_id] = task_id
+    result[:timestamp] = timestamp
     raise Subscriber::ServerException.new result, 500
   end
 end
@@ -356,7 +350,9 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
     random_string,
     CONSTANTS::BUILD,
     "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
-    docker_image_name_tag
+    docker_image_name_tag,
+    task_id,
+    timestamp
   )
 
   random_string = "#{CONSTANTS::RUN}-#{SecureRandom.hex}"
@@ -365,7 +361,9 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
     random_string,
     CONSTANTS::RUN,
     "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
-    docker_image_name_tag
+    docker_image_name_tag,
+    task_id,
+    timestamp
   )
 
 rescue Subscriber::ClientException => e
