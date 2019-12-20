@@ -169,6 +169,7 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   puts "Docker run command execution status code: #{exitstatus}"
 
   if exitstatus != 0
+    result = {}
     result[:task_id] = task_id
     result[:timestamp] = timestamp
     raise Subscriber::ServerException.new result, 500
