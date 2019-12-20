@@ -305,23 +305,23 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
 
   unless File.exist? submission
     if valid_zip_file_param? params
-      subscriber_instance.client_error!({ error: "Zip file not found: #{submission}" }, 400)
+      subscriber_instance.client_error!({ error: "Zip file not found: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
     else
       # By default, Overseer will expect a folder path
-      subscriber_instance.client_error!({ error: "Folder not found: #{submission}" }, 400)
+      subscriber_instance.client_error!({ error: "Folder not found: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
     end
   end
 
   unless File.exist? assessment
-    subscriber_instance.client_error!({ error: "Zip file not found: #{assessment}" }, 400)
+    subscriber_instance.client_error!({ error: "Zip file not found: #{assessment}", task_id: task_id, timestamp: timestamp }, 400)
   end
 
   unless valid_zip? submission
-    subscriber_instance.client_error!({ error: "Invalid zip file: #{submission}" }, 400)
+    subscriber_instance.client_error!({ error: "Invalid zip file: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
   end
 
   unless valid_zip? assessment
-    subscriber_instance.client_error!({ error: "Invalid zip file: #{assessment}" }, 400)
+    subscriber_instance.client_error!({ error: "Invalid zip file: #{assessment}", task_id: task_id, timestamp: timestamp }, 400)
   end
 
   if File.exist? docker_workdir_path
