@@ -56,15 +56,15 @@ def host_output_path
 end
 
 def container_name
-  ENV['CONTAINER_NAME']
+  ENV['CONTAINER_NAME'] || 'overseer-container'
 end
 
 # End ==========================================================
 
-def ack_result(results_publisher, task_id, timestamp, output_path)
+def ack_result(results_publisher, overseer_assessment_id, task_id, timestamp, output_path)
   return if results_publisher.nil?
 
-  msg = { task_id: task_id, timestamp: timestamp }
+  msg = { overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }
 
   results_publisher.connect_publisher
   results_publisher.publish_message msg
@@ -83,9 +83,9 @@ def valid_zip?(file)
   false
 end
 
-# Flat extract a zip file, no sub-directories.
-def extract_zip(input_zip_file_path, output_loc)
-  puts "Flattening and extracting:"
+# Extract the zip file with all path details, or flatten based on parameters. Allows details to be overriden or not depending on parameters passed in.
+def extract_zip(input_zip_file_path, output_loc, flatten = false, override = false)
+  puts "Extracting:"
   puts "  zip file:".ljust(20) + input_zip_file_path
   puts "  to:".ljust(20) + output_loc
   puts "  files: "
@@ -94,9 +94,25 @@ def extract_zip(input_zip_file_path, output_loc)
     zip_file.each do |entry|
       # Extract to file/directory/symlink
       unless entry.ftype.to_s == 'directory'
-        pn = Pathname.new entry.name
-        puts "    - type: #{entry.ftype}".ljust(20) + " original_name: #{entry.name}".ljust(50) + " final_name: #{pn.basename}"
-        entry.extract "#{output_loc}/#{pn.basename}"
+        if flatten
+          pn = File.join(output_loc, Pathname.new(entry.name).basename)
+        else
+          pn = File.join(output_loc, entry.name)
+        end
+        override_msg = ''
+        if File.exists?(pn)
+          if override
+            FileUtils.rm_f(pn)
+            override_msg = ' OVERIDE'
+          else
+            puts "    - type: #{entry.ftype}".ljust(20) + " original_name: #{entry.name}".ljust(50) + " SKIPPED"
+            # dont override so skip
+            continue
+          end
+        end
+        FileUtils.mkdir_p(File.dirname(pn))
+        puts "    - type: #{entry.ftype}".ljust(20) + " original_name: #{entry.name}".ljust(50) + " final_name: #{pn}#{override_msg}"
+        entry.extract pn
       end
     end
   end
@@ -118,7 +134,7 @@ end
 # command:          The bash command to be run via
 #                   `docker run [options] <image_name_tag> /bin/bash -c "#{command}"`.
 # image_name_tag:   Name and tag of the image to be run as a container.
-def run_assessment_script_via_docker(output_path, random_string, exec_mode, command, image_name_tag, task_id, timestamp)
+def run_assessment_script_via_docker(output_path, random_string, exec_mode, command, image_name_tag, task_id, timestamp, overseer_assessment_id)
   client_error!({ error: "A valid Docker image_name:tag is needed" }, 400) if image_name_tag.nil? || image_name_tag.to_s.strip.empty?
   force_remove_container
 
@@ -145,7 +161,19 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   # https://docs.docker.com/engine/reference/run/#runtime-constraints-on-resources
   # -u="overseer" (specify default non-root user)
 
-  `timeout 20 docker run \
+  # puts "docker run \
+  # -m 100MB \
+  # --memory-swap 100MB \
+  # --restart no \
+  # --cpus 1 \
+  # --network none \
+  # --volume #{host_exec_path}:/#{CONSTANTS::DOCKER_EXECDIR} \
+  # --volume #{host_output_path}:/#{CONSTANTS::DOCKER_OUTDIR} \
+  # --name #{container_name} \
+  # #{image_name_tag} \
+  # /bin/bash -c \"#{command}\""
+
+  `timeout 60 docker run \
   -m 100MB \
   --memory-swap 100MB \
   --restart no \
@@ -161,19 +189,22 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   puts "ππππππππππππππππ Container '#{container_name}' execution for exec_mode: '#{exec_mode}' ENDED ππππππππππππππππππππππ"
 
   exitstatus = $?.exitstatus
-  extract_result_files docker_outdir_path, output_path, random_string, $?.exitstatus
+  extract_result_files docker_outdir_path, output_path, random_string, exitstatus
 
   diff_result = `docker diff #{container_name}`
   extract_docker_diff_file output_path, diff_result, exec_mode
 
   puts "Docker run command execution status code: #{exitstatus}"
 
-  if exitstatus != 0
-    result = {}
-    result[:task_id] = task_id
-    result[:timestamp] = timestamp
-    raise Subscriber::ServerException.new result, 500
-  end
+  # if exitstatus != 0
+  #   result = {}
+  #   result[:task_id] = task_id
+  #   result[:overseer_assessment_id] = overseer_assessment_id
+  #   result[:timestamp] = timestamp
+  #   raise Subscriber::ServerException.new result, 500
+  # end
+
+  exitstatus
 end
 
 # Step 4
@@ -187,18 +218,16 @@ def extract_result_files(s_path, output_path, random_string, exitstatus)
 
   puts 'Extracting result file from the sandbox:'
   puts "  source:".ljust(20) + s_path
-  puts "  destination:".ljust(20) + output_path + \
-    (File.exist?(output_path) ? \
-    '  # Destination path already exists (\033[1mBAD\033[0m. Something went wrong previously?). Skipping creation.' : \
-    '  # Destination path doesn\'t exist (GOOD). Creating.')
+  puts "  destination:".ljust(20) + output_path
   puts "  file prefix:".ljust(20) + random_string
 
-  FileUtils.mkdir_p output_path
-
-  input_txt_file_name = "#{s_path}/#{random_string}.txt"
+  # Get path to output files
   output_txt_file_name = "#{output_path}/output.txt"
-  input_yaml_file_name = "#{s_path}/#{random_string}.yaml"
   output_yaml_file_name = "#{output_path}/output.yaml"
+
+  # Set files to input into the scripts
+  input_txt_file_name = "#{s_path}/#{random_string}.txt"
+  input_yaml_file_name = "#{s_path}/#{random_string}.yaml"
 
   # Process .txt file.
   if File.exist? input_txt_file_name
@@ -261,6 +290,7 @@ end
 # Step 0, 6
 def cleanup_docker_workdir
   return if docker_workdir_path.nil?
+  return unless docker_workdir_path.strip.empty? # not nil or empty
   return unless File.exist? docker_workdir_path
 
   puts "Cleaning HOST_XFS_VOLUME force-recursively: #{docker_workdir_path}/*"
@@ -299,89 +329,112 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
   assessment = params['assessment']
   timestamp = params['timestamp']
   task_id = params['task_id']
+  overseer_assessment_id = params['overseer_assessment_id']
 
   unless task_id.is_a?(Integer)
     subscriber_instance.client_error!({ error: "Invalid task_id: #{task_id}" }, 400)
   end
 
+  unless overseer_assessment_id.is_a?(Integer)
+    subscriber_instance.client_error!({ error: "Invalid overseer_assessment_id: #{overseer_assessment_id}" }, 400)
+  end
+
   unless File.exist? submission
     if valid_zip_file_param? params
-      subscriber_instance.client_error!({ error: "Zip file not found: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
+      subscriber_instance.client_error!({ error: "Zip file not found: #{submission}", overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 400)
     else
       # By default, Overseer will expect a folder path
-      subscriber_instance.client_error!({ error: "Folder not found: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
+      subscriber_instance.client_error!({ error: "Folder not found: #{submission}", overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 400)
     end
   end
 
   unless File.exist? assessment
-    subscriber_instance.client_error!({ error: "Zip file not found: #{assessment}", task_id: task_id, timestamp: timestamp }, 400)
+    subscriber_instance.client_error!({ error: "Zip file not found: #{assessment}", overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 400)
   end
 
   unless valid_zip? submission
-    subscriber_instance.client_error!({ error: "Invalid zip file: #{submission}", task_id: task_id, timestamp: timestamp }, 400)
+    subscriber_instance.client_error!({ error: "Invalid zip file: #{submission}", overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 400)
   end
 
   unless valid_zip? assessment
-    subscriber_instance.client_error!({ error: "Invalid zip file: #{assessment}", task_id: task_id, timestamp: timestamp }, 400)
+    subscriber_instance.client_error!({ error: "Invalid zip file: #{assessment}", overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 400)
   end
 
   if File.exist? docker_workdir_path
     cleanup_docker_workdir
   end
 
+  if File.exists? docker_execdir_path
+    FileUtils.rm_rf docker_execdir_path
+  end
+
+  if File.exists? docker_outdir_path
+    FileUtils.rm_rf docker_outdir_path
+  end
+
   # TODO: Add correct permissions here
   FileUtils.mkdir_p docker_execdir_path
   FileUtils.mkdir_p docker_outdir_path
 
+  # Clean any output txt and yaml if present
+  FileUtils.mkdir_p(output_path) unless File.exists?(output_path)
+  FileUtils.rm("#{output_path}/output.txt") if File.exists?("#{output_path}/output.txt")
+  FileUtils.rm("#{output_path}/output.yaml") if File.exists?("#{output_path}/output.yaml")
+
+  
   skip_rm = params['skip_rm'] || 0
 
   # Step 1
   if valid_zip_file_param? params
-    extract_zip submission, docker_execdir_path
+    # Flatten to ensure submission files are within the root folder not in a task id based subfolder
+    extract_zip submission, docker_execdir_path, true, false
   else
     `cp -R #{submission}/. #{docker_execdir_path}`
   end
 
   # Step 2
-  extract_zip assessment, docker_execdir_path
+  extract_zip assessment, docker_execdir_path, false, true
 
   random_string = "#{CONSTANTS::BUILD}-#{SecureRandom.hex}"
-  run_assessment_script_via_docker(
+  exit_code = run_assessment_script_via_docker(
     output_path,
     random_string,
     CONSTANTS::BUILD,
-    "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
+    "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::BUILD}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt 2>> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
     docker_image_name_tag,
     task_id,
-    timestamp
+    timestamp,
+    overseer_assessment_id
   )
 
-  random_string = "#{CONSTANTS::RUN}-#{SecureRandom.hex}"
-  run_assessment_script_via_docker(
-    output_path,
-    random_string,
-    CONSTANTS::RUN,
-    "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
-    docker_image_name_tag,
-    task_id,
-    timestamp
-  )
-
+  if exit_code == 0
+    random_string = "#{CONSTANTS::RUN}-#{SecureRandom.hex}"
+    run_assessment_script_via_docker(
+      output_path,
+      random_string,
+      CONSTANTS::RUN,
+      "chmod u+x /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh && /#{CONSTANTS::DOCKER_EXECDIR}/#{CONSTANTS::RUN}.sh /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.yaml >> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt 2>> /#{CONSTANTS::DOCKER_OUTDIR}/#{random_string}.txt",
+      docker_image_name_tag,
+      task_id,
+      timestamp,
+      overseer_assessment_id
+    )
+  end
 rescue Subscriber::ClientException => e
   channel.ack(delivery_info.delivery_tag)
   # TODO: Log the error
-  # puts "Error: #{e.message}"
+  puts "Error: #{e.message}"
 rescue Subscriber::ServerException => e
   channel.ack(delivery_info.delivery_tag)
   # TODO: Log the error
-  # puts "Error: #{e.message}"
+  puts "Error: #{e.message}"
 rescue StandardError => e
   channel.ack(delivery_info.delivery_tag)
   puts "StandardError: #{e.message}"
-  subscriber_instance.server_error!({ error: 'Internal server error', task_id: task_id, timestamp: timestamp }, 500)
+  subscriber_instance.server_error!({ error: 'Internal server error', overseer_assessment_id: overseer_assessment_id, task_id: task_id, timestamp: timestamp }, 500)
 else
   channel.ack(delivery_info.delivery_tag)
-  ack_result results_publisher, task_id, timestamp, output_path
+  ack_result results_publisher, overseer_assessment_id, task_id, timestamp, output_path
 ensure
   if skip_rm != 1
     cleanup_docker_workdir
