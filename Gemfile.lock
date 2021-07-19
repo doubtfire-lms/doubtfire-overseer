@@ -8,21 +8,27 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    amq-protocol (2.3.0)
-    bunny (2.14.3)
-      amq-protocol (~> 2.3, >= 2.3.0)
-    dotenv (2.7.5)
-    ffi (1.11.1)
-    listen (3.2.0)
+    amq-protocol (2.3.2)
+    bunny (2.18.0)
+      amq-protocol (~> 2.3, >= 2.3.1)
+      sorted_set (~> 1, >= 1.0.2)
+    dotenv (2.7.6)
+    ffi (1.15.3)
+    listen (3.5.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    rb-fsevent (0.10.3)
-    rb-inotify (0.10.0)
+    rb-fsevent (0.11.0)
+    rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rerun (0.13.0)
+    rbtree (0.4.4)
+    rerun (0.13.1)
       listen (~> 3.0)
-    rubyzip (1.2.3)
-    rufo (0.7.0)
+    rubyzip (2.3.0)
+    rufo (0.13.0)
+    set (1.0.1)
+    sorted_set (1.0.3)
+      rbtree
+      set (~> 1.0)
 
 PLATFORMS
   ruby
@@ -36,7 +42,7 @@ DEPENDENCIES
   rufo
 
 RUBY VERSION
-   ruby 2.5.3p105
+   ruby 2.6.6p146
 
 BUNDLED WITH
-   2.0.2
+   2.2.16
