@@ -35,8 +35,8 @@ RUN touch /var/run/docker.sock && \
 USER 1001:999
 WORKDIR /home/overseer
 
-RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash \
-    && rbenv install 2.5.3 && rbenv global 2.5.3 \
+RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/main/bin/rbenv-installer | bash \
+    && rbenv install 3.0.2 && rbenv global 3.0.2 \
     && gem install bundler -v 2.0.2
 
 WORKDIR /app

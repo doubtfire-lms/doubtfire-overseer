@@ -2,7 +2,7 @@
 
 source 'http://rubygems.org'
 
-ruby '~> 3.0.0'
+ruby '~> 3.0.2'
 
 gem 'bunny', '>= 2.14.1'
 gem 'bunny-pub-sub', '0.0.9', git: 'https://github.com/doubtfire-overseer/bunny-pub-sub'
