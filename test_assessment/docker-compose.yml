@@ -1,0 +1,17 @@
+version: "3"
+services:
+  test_container:
+    container_name: overseer-test
+    image: macite/overseer-dotnet
+    networks:
+      - none
+    volumes:
+      # App's code path - not required in final image
+      - ./sandbox:/home/overseer/work-dir/sandbox
+      - ./output:/home/overseer/work-dir/output
+    command: /bin/bash -c "./build.sh ../output/test.yaml >> ../output/test.txt 2>> ../output/test.txt && ./run.sh ../output/test.yaml >> ../test.txt 2>> ../output/test.txt"
+
+networks:
+  none:
+    driver: bridge
+    internal: true
