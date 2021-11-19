@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.4](https://github.com/macite/doubtfire-deploy/compare/v5.0.3...v5.0.4) (2021-11-19)
+
+
+### Bug Fixes
+
+* update bunny pub sub to fix subscriber launch ([57aeca6](https://github.com/macite/doubtfire-deploy/commit/57aeca6a92f94a539d0449de139dd8a841e9ab38))
+
 ### [5.0.3](https://github.com/macite/doubtfire-deploy/compare/v5.0.2...v5.0.3) (2021-11-19)
 
 
