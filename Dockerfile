@@ -21,3 +21,7 @@ RUN bundle install
 # RUN mkdir /home/overseer/work-dir
     # && chown -R 1001:999 /home/overseer/work-dir \
     # && chmod -R 777 /home/overseer/work-dir
+
+COPY . /app/
+
+CMD bundle exec ruby ./app.rb
