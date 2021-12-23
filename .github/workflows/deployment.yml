@@ -1,4 +1,4 @@
-name: create-doubtfire-deployment
+name: create-doubtfire-overseer
 on:
   push:
     tags:
@@ -39,6 +39,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          file: Dockerfile
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.docker_meta.outputs.tags }}

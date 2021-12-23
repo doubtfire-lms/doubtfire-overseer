@@ -13,7 +13,7 @@ WORKDIR /app
 
 RUN gem install bundler
 
-COPY Gemfile Gemfile.lock ./
+COPY . .
 RUN bundle install
 
 # Is not needed as long as the equivalent HOST DIR
@@ -21,7 +21,5 @@ RUN bundle install
 # RUN mkdir /home/overseer/work-dir
     # && chown -R 1001:999 /home/overseer/work-dir \
     # && chmod -R 777 /home/overseer/work-dir
-
-COPY . /app/
 
 CMD bundle exec ruby ./app.rb

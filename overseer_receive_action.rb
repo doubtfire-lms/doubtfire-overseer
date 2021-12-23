@@ -173,9 +173,7 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   # #{image_name_tag} \
   # /bin/bash -c \"#{command}\""
 
-  `timeout 60 docker run \
-  -m 100MB \
-  --memory-swap 100MB \
+  `timeout 300 docker run \
   --restart no \
   --cpus 1 \
   --network none \
