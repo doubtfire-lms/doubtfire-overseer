@@ -5,7 +5,7 @@ GEM
     bunny (2.18.0)
       amq-protocol (~> 2.3, >= 2.3.1)
       sorted_set (~> 1, >= 1.0.2)
-    bunny-pub-sub (0.5.1)
+    bunny-pub-sub (0.5.2)
       bunny (~> 2.14)
     dotenv (2.7.6)
     ffi (1.15.3)
@@ -30,7 +30,7 @@ PLATFORMS
 
 DEPENDENCIES
   bunny (>= 2.14.1)
-  bunny-pub-sub (= 0.5.1)
+  bunny-pub-sub (= 0.5.2)
   dotenv
   rerun
   rubyzip
@@ -40,4 +40,4 @@ RUBY VERSION
    ruby 2.6.6p146
 
 BUNDLED WITH
-   2.2.31
+   2.2.33
