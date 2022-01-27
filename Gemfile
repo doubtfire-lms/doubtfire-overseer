@@ -2,7 +2,7 @@
 
 source 'http://rubygems.org'
 
-ruby '~> 2.6.6'
+ruby '~> 3.1.0'
 
 gem 'bunny', '>= 2.14.1'
 gem 'bunny-pub-sub', '0.5.2'

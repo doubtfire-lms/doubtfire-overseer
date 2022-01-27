@@ -100,7 +100,7 @@ def extract_zip(input_zip_file_path, output_loc, flatten = false, override = fal
           pn = File.join(output_loc, entry.name)
         end
         override_msg = ''
-        if File.exists?(pn)
+        if File.exist?(pn)
           if override
             FileUtils.rm_f(pn)
             override_msg = ' OVERIDE'
@@ -362,11 +362,11 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
     cleanup_docker_workdir
   end
 
-  if File.exists? docker_execdir_path
+  if File.exist? docker_execdir_path
     FileUtils.rm_rf docker_execdir_path
   end
 
-  if File.exists? docker_outdir_path
+  if File.exist? docker_outdir_path
     FileUtils.rm_rf docker_outdir_path
   end
 
@@ -375,9 +375,9 @@ def receive(subscriber_instance, channel, results_publisher, delivery_info, _pro
   FileUtils.mkdir_p docker_outdir_path
 
   # Clean any output txt and yaml if present
-  FileUtils.mkdir_p(output_path) unless File.exists?(output_path)
-  FileUtils.rm("#{output_path}/output.txt") if File.exists?("#{output_path}/output.txt")
-  FileUtils.rm("#{output_path}/output.yaml") if File.exists?("#{output_path}/output.yaml")
+  FileUtils.mkdir_p(output_path) unless File.exist?(output_path)
+  FileUtils.rm("#{output_path}/output.txt") if File.exist?("#{output_path}/output.txt")
+  FileUtils.rm("#{output_path}/output.yaml") if File.exist?("#{output_path}/output.yaml")
 
   
   skip_rm = params['skip_rm'] || 0
