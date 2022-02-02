@@ -15,7 +15,7 @@
   ```
 
   * `RABBITMQ_HOSTNAME`, `RABBITMQ_USERNAME`, and `RABBITMQ_PASSWORD` provide details needed to access the rabbitmq.
-  * `HOST_XFS_VOLUME` is the path to the location where overseer containers will store their work. When multiple overseer instances are run this path needs to be unique for each instance. Overseer will create `sandbox` and `output` folders in this location.
+  * `HOST_XFS_VOLUME` is a path on the host that will run the automated code. This needs to refer to the location where overseer containers will store their work. Overseer uses this to setup a volume in each container it creates. When multiple overseer instances are run this path needs to be unique for each instance. Overseer will create `sandbox` and `output` folders in this location.
   * `CONTAINER_NAME` is optional (defaults to `overseer-container`) and provides the name of the container that overseer creates. If there are multiple overseer instances then they must have unique container names.
 
 * Easiest option is to setup rabbitmq alongside overseer in the same docker network, and have it setup to run with the management interface.

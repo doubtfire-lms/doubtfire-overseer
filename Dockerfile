@@ -1,4 +1,4 @@
-FROM ruby:2.6.7-buster
+FROM ruby:3.1-buster
 
 # docker-ce-cli apt dependencies
 ENV DEBIAN_FRONTEND noninteractive
