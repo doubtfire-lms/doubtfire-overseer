@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.0](https://github.com/macite/doubtfire-deploy/compare/v5.0.8...v6.0.0) (2022-02-02)
+
+
+### Features
+
+* update overseer to ruby 3.1 ([f1bf9f7](https://github.com/macite/doubtfire-deploy/commit/f1bf9f71ed78a7fc6efb0f5f6e858d2f6c336829))
+
 ### [5.0.6](https://github.com/macite/doubtfire-deploy/compare/v5.0.5...v5.0.6) (2021-12-06)
 
 ### [5.0.5](https://github.com/macite/doubtfire-deploy/compare/v5.0.4...v5.0.5) (2021-11-19)
