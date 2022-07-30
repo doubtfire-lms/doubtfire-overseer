@@ -7,7 +7,7 @@ GEM
       sorted_set (~> 1, >= 1.0.2)
     bunny-pub-sub (0.5.2)
       bunny (~> 2.14)
-    dotenv (2.7.6)
+    dotenv (2.8.1)
     ffi (1.15.5)
     listen (3.7.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -30,14 +30,14 @@ PLATFORMS
 
 DEPENDENCIES
   bunny (>= 2.14.1)
-  bunny-pub-sub (= 0.5.2)
+  bunny-pub-sub
   dotenv
   rerun
   rubyzip
   rufo
 
 RUBY VERSION
-   ruby 3.1.1p18
+   ruby 3.1.2p20
 
 BUNDLED WITH
-   2.2.33
+   2.3.19

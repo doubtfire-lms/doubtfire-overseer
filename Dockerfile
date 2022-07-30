@@ -1,4 +1,4 @@
-FROM ruby:3.1-buster
+FROM ruby:3.1-bullseye
 
 # docker-ce-cli apt dependencies
 ENV DEBIAN_FRONTEND noninteractive
@@ -11,7 +11,7 @@ RUN apt-get -y install docker-ce docker-ce-cli containerd.io
 
 WORKDIR /app
 
-RUN gem install bundler
+RUN gem install bundler -v '~> 2.3.18'
 
 COPY . .
 RUN bundle install
