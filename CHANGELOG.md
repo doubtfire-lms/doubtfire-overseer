@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.0.2](https://github.com/macite/doubtfire-deploy/compare/v6.0.1...v6.0.2) (2023-04-11)
+
+
+### Bug Fixes
+
+* add registry to image names ([92b6745](https://github.com/macite/doubtfire-deploy/commit/92b67453a1a7654a18d56a11c5caff5d434223b5))
+* enable oversser on arm machines ([f1058c1](https://github.com/macite/doubtfire-deploy/commit/f1058c17335b8dc57cf0f2dab497c9565827091f))
+
 ### [6.0.1](https://github.com/macite/doubtfire-deploy/compare/v6.0.0...v6.0.1) (2022-03-22)
 
 ## [6.0.0](https://github.com/macite/doubtfire-deploy/compare/v5.0.8...v6.0.0) (2022-02-02)
