@@ -138,6 +138,14 @@ def run_assessment_script_via_docker(output_path, random_string, exec_mode, comm
   client_error!({ error: "A valid Docker image_name:tag is needed" }, 400) if image_name_tag.nil? || image_name_tag.to_s.strip.empty?
   force_remove_container
 
+  # Load registry details
+  registry = ENV.fetch('DOCKER_PROXY_URL', nil)
+  registry = "#{registry}/" if !registry.nil? && !registry.end_with?('/')
+  registry = "" if registry.nil?
+
+  # Add registry to image_name_tag
+  image_name_tag = "#{registry}#{image_name_tag}"
+
   puts 'Running assessment container with the following configuration:'
   puts "  container_name: #{container_name}"
   puts "  image_name_tag: #{image_name_tag}"
